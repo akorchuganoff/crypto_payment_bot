@@ -48,9 +48,9 @@ async def start(message: types.Message):
         user = User(user_id=message.from_user.id, ton_balance=0, bnb_balance=0, lt_balance=0, risk_amount=0, ton_mnemonics=json.dumps(mnemonics), init_ton_flag=False)
         session.add(user)
         session.commit()
-        await bot.send_message(user.user_id, f"Вы зарегистрировались. Ваш пользователь выглядит так:\n{user.user_id}\n{user.ton_mnemonics}")
+        await bot.send_message(user.user_id, "Welcome to WP. Layer0 mining/trading crosschain bridge.")
     else:
-        await bot.send_message(user.user_id, f"Log IN. Ваш пользователь выглядит так:\n{user.user_id}\n{user.ton_mnemonics}")
+        await bot.send_message(user.user_id, f"Welcome to WP. Layer0 mining/trading crosschain bridge.")
 
 def risk(message: types.Message):
     pass
