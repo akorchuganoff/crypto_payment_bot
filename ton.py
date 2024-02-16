@@ -74,39 +74,3 @@ async def start():
             with open('last_lt.txt', 'w') as f:
                 f.write(str(last_lt))
 
-
-class HTTPMethods:
-    GET = "GET"
-    POST = "POST"
-
-headers: dict = {"Authorization": f"Bearer {config.API_KEY}"}
-_http_client: AsyncClient = AsyncClient(headers=headers)
-
-
-
-class TONAPIBaseException(Exception):
-    pass
-
-
-async def _json_request(self, http_method: str, url: str, **request_kwargs) -> dict:
-        return (
-            await _http_client.request(method=http_method, url=url, **request_kwargs)
-        ).json()
-
-
-
-async def send_transaction(self, boc: str) -> str:
-        
-    headers: dict = {"Authorization": f"Bearer {config.API_KEY}"}
-    _http_client: AsyncClient = AsyncClient(headers=headers)
-
-    response_data: dict = await self._json_request(
-        http_method=HTTPMethods.POST,
-        url=config.SEND_TRANSACTION_API_URL,
-        json=dict(boc=boc),
-    )
-
-    if "error" in response_data:
-        raise TONAPIBaseException("Transaction send error")
-
-    return b64decode(s=response_data["result"]["hash"]).hex()
