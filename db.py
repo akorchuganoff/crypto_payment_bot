@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, Float
+from sqlalchemy import create_engine, Column, Integer, Float, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -16,6 +16,8 @@ class User(Base):
     bnb_balance = Column(Float)
     lt_balance = Column(Float)
     risk_amount = Column(Float)
+    ton_mnemonics = Column(String)
+    init_ton_flag = Column(Boolean)
 
 # Создаем таблицу, если она еще не существует
 Base.metadata.create_all(engine)

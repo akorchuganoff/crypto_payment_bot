@@ -73,4 +73,3 @@ async def start():
             last_lt = lt
             with open('last_lt.txt', 'w') as f:
                 f.write(str(last_lt))
-
