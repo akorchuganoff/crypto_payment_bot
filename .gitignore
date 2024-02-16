@@ -1,0 +1,6 @@
+/config.py
+/cryptobot.db
+/last_lt.txt
+/venv
+/__pycache__
+/.gitignore
