@@ -19,7 +19,7 @@ import ton
 import json
 
 from wallet import create_wallet, get_wallet_from_mnemonic
-from utils import send_transaction, init_wallet
+from utils import send_transaction, init_wallet, get_ton_wallet_balance, get_user_ton_wallet
 
 
 
@@ -31,10 +31,6 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 
 async def get_user(user_id):
     user = session.query(User).filter_by(user_id=user_id).first()
-    if user is None:
-        user = User(user_id=user_id, ton_balance=0, bnb_balance=0, lt_balance=0, risk_amount=0)
-        session.add(user)
-        session.commit()
     return user
 
 
@@ -48,9 +44,9 @@ async def start(message: types.Message):
         user = User(user_id=message.from_user.id, ton_balance=0, bnb_balance=0, lt_balance=0, risk_amount=0, ton_mnemonics=json.dumps(mnemonics), init_ton_flag=False)
         session.add(user)
         session.commit()
-        await bot.send_message(user.user_id, "Welcome to WP. Layer0 mining/trading crosschain bridge.")
+        await bot.send_message(user.user_id, f"Зарегистрировался user_id: {user.user_id}, mnemonics: {user.ton_mnemonics}")
     else:
-        await bot.send_message(user.user_id, f"Welcome to WP. Layer0 mining/trading crosschain bridge.")
+        await bot.send_message(user.user_id, f"LOG IN user_id: {user.user_id}, mnemonics: {user.ton_mnemonics}")
 
 def risk(message: types.Message):
     pass
@@ -62,6 +58,16 @@ def block(message: types.Message):
 @dp.message_handler(commands='balance')
 async def balance(message: types.Message):
     user = await get_user(message.from_user.id)
+    
+    mnemonics = json.loads(user.ton_mnemonics)
+    mnemonics, pub_k, priv_k, wallet = get_wallet_from_mnemonic(mnemonics)
+
+    ton_balance = await get_ton_wallet_balance(wallet)
+
+    if user.ton_balance != ton_balance:
+        user.ton_balance = ton_balance
+        session.commit()
+
     await bot.send_message(user.user_id, f"Balance:\nTON: {user.ton_balance}\nBNB: {user.bnb_balance}\nLT: {user.lt_balance}")
 
 
@@ -104,7 +110,7 @@ class WithdrawState(StatesGroup):
 # Обработчик команды /withdraw
 @dp.message_handler(commands="withdraw", state="*")
 async def withdraw_command(message: types.Message, state: FSMContext):
-    user = session.query(User).filter_by(user_id=message.from_user.id).first()
+    user = await get_user(message.from_user.id)
     if not user.init_ton_flag:
         mnemonics = json.loads(user.ton_mnemonics)
         mnemonics, pub_k, priv_k, wallet = get_wallet_from_mnemonic(mnemonics)
@@ -114,6 +120,8 @@ async def withdraw_command(message: types.Message, state: FSMContext):
         user.init_ton_flag = True
         session.commit()
     else:
+        wallet = await get_user_ton_wallet(user)
+        await message.answer(f"Баланс кошелька TON: {await get_ton_wallet_balance(wallet)}")
         await message.answer("Введите адрес вашего кошелька:")
         await state.set_state(WithdrawState.waiting_for_wallet_address.state)
 
@@ -134,23 +142,29 @@ async def process_wallet_address(message: types.Message, state: FSMContext):
 
     data = await state.get_data()
 
-    await message.answer(f"Вы ввели адрес кошелька: {data['wallet_address']}\nВывести следующее число TON: {data['amount']}\n Подтвердите [yes/no]")
-    await state.set_state(WithdrawState.waiting_for_confirmation.state)
+    await message.answer(f"Вы ввели адрес кошелька: {data['wallet_address']}\nВывести следующее число TON: {data['amount']}")
+
+    user = await get_user(message.from_user.id)
+    wallet = await get_user_ton_wallet(user)
+
+    if float(data['amount']) > float(await get_ton_wallet_balance(wallet)):
+        await message.answer("Ваш баланс меньше введенного числа. Вывод невозможен")
+        await state.finish()
+    else:
+        await message.answer("Подтвердите вывод: [yes/no]")
+        await state.set_state(WithdrawState.waiting_for_confirmation.state)
 
 @dp.message_handler(state=WithdrawState.waiting_for_confirmation.state)
 async def process_wallet_address(message: types.Message, state: FSMContext):
     confirmation = message.text
     
-    if confirmation != "yes":
+    if confirmation.lower() != "yes":
         await message.answer("Транзакция отменена")
     else:
 
-        user = session.query(User).filter_by(user_id=message.from_user.id).first()
+        user = await get_user(message.from_user.id)
 
-        mnemonics = json.loads(user.ton_mnemonics)
-        mnemonics, pub_k, priv_k, wallet = get_wallet_from_mnemonic(mnemonics)
-
-        print(mnemonics)
+        wallet = await get_user_ton_wallet(user)
 
         data = await state.get_data()
 
