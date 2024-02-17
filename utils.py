@@ -24,20 +24,6 @@ def get_existed_user(user_id):
     user = session.query(User).filter_by(user_id=user_id).first()
     return user
 
-async def init_wallet(wallet):
-    url = "https://ton.org/testnet-global.config.json"
-    config = requests.get(url).json()
-
-    keystore = "/tmp/ton_keystore"
-    Path(keystore).mkdir(parents=True, exist_ok=True)
-
-    client = TonlibClient(ls_index=1, config=config, keystore=keystore)
-
-    await client.init()
-    query = wallet.create_init_external_message()
-    deploy_message = query["message"].to_boc(False)
-    await client.raw_send_message(deploy_message)
-
 async def init_client():
     url = "https://ton.org/testnet-global.config.json"
     config = requests.get(url).json()
@@ -50,6 +36,13 @@ async def init_client():
     await client.init()
 
     return client
+
+async def init_wallet(wallet):
+    client = await init_client()
+
+    query = wallet.create_init_external_message()
+    deploy_message = query["message"].to_boc(False)
+    await client.raw_send_message(deploy_message)
 
 async def get_seqno(client: TonlibClient, address:str):
     data =  await client.raw_run_method(method="seqno", stack_data=[], address=address)
