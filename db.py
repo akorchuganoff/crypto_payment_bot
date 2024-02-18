@@ -18,6 +18,7 @@ class User(Base):
     risk_amount = Column(Float)
     ton_mnemonics = Column(String)
     init_ton_flag = Column(Boolean)
+    bnb_mnemonics = Column(String)
 
 # Создаем таблицу, если она еще не существует
 Base.metadata.create_all(engine)
