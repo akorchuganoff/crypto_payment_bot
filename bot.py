@@ -47,11 +47,11 @@ async def start(message: types.Message, state=FSMContext):
         user = User(user_id=message.from_user.id, ton_balance=0, bnb_balance=0, lt_balance=0, risk_amount=0, ton_mnemonics=json.dumps(mnemonics_ton), init_ton_flag=False, bnb_mnemonics=mnemonics_bnb)
         session.add(user)
         session.commit()
-        await message.answer("Welcome to WP. Layer0 mining/trading crosschain bridge.")
-        # await bot.send_message(user.user_id, f"Зарегистрировался user_id: {user.user_id}, ton_mnemonics: {user.ton_mnemonics}\nbnb_mnemonics: {user.bnb_mnemonics}")
+        # await message.answer("Welcome to WP. Layer0 mining/trading crosschain bridge.")
+        await bot.send_message(user.user_id, f"Зарегистрировался user_id: {user.user_id}, ton_mnemonics: {user.ton_mnemonics}\nbnb_mnemonics: {user.bnb_mnemonics}")
     else:
-        await message.answer("Welcome to WP. Layer0 mining/trading crosschain bridge.")
-        # await bot.send_message(user.user_id, f"LOG IN user_id: {user.user_id},\nton_mnemonics: {user.ton_mnemonics}\nbnb_mnemonics: {user.bnb_mnemonics}")
+        # await message.answer("Welcome to WP. Layer0 mining/trading crosschain bridge.")
+        await bot.send_message(user.user_id, f"LOG IN user_id: {user.user_id},\nton_mnemonics: {user.ton_mnemonics}\nbnb_mnemonics: {user.bnb_mnemonics}")
 
 def risk(message: types.Message):
     pass

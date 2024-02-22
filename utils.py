@@ -35,7 +35,7 @@ async def init_ton_client():
     keystore = "/tmp/ton_keystore"
     Path(keystore).mkdir(parents=True, exist_ok=True)
 
-    client = TonlibClient(ls_index=0, config=config, keystore=keystore)
+    client = TonlibClient(ls_index=12, config=config, keystore=keystore)
 
     await client.init()
 
