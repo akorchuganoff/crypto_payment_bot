@@ -11,7 +11,7 @@ import metadata from "./data.json";
     // Parameters
     let testnet = true;
     let packageName = 'lesson5_TokenMaster.pkg';
-    let owner = Address.parse('EQC4ehueRqyWjOdWBKSSZuvmWOJ6vuO134tYIZbuZBzv0CH5');
+    let owner = Address.parse('EQC_lg49-7GnVJY3PlJdJXHDjB1y8oNFrRPxwrIp3JkrD0jI');
     let init = await TokenMaster.init(owner, buildOnchainMetadata(metadata));
 
     // Load required data
